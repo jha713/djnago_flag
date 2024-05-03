@@ -1,0 +1,29 @@
+featureFlags:
+  flags:
+  - flag:
+      name: python_djnago
+      identifier: python_djnago
+      description: ""
+      permanent: false
+      spec:
+        type: boolean
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        variations:
+        - identifier: "true"
+          value: "true"
+        - identifier: "false"
+          value: "false"
+      environments:
+      - identifier: python
+        default:
+          onVariation: "true"
+          offVariation: "false"
+        state: "on"
+        targetRules:
+        - targets:
+          - identifier: abhi
+          variation: "true"
+  projectIdentifier: python_djnago
+  orgIdentifier: default
