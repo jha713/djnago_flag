@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import FeatureFlag
 import requests
+import yaml
 
 def index(request):
     # Retrieve all feature flags from the database
@@ -29,28 +30,44 @@ def index(request):
 #     # Pass the flag status to the template
 #     return render(request, 'my_view.html', {'flag_status': flag_status_api})
 
-import yaml
+# def my_view(request):
+#     # Path to the pipeline.yaml file
+#     file_path = 'django_flag/pipeline.yaml'
+    
+#     try:
+#         # Read the contents of the file
+#         with open(file_path, 'r') as file:
+#             yaml_data = yaml.safe_load(file)
+        
+#         # Extract the flag status from the parsed YAML data
+#         flag_status = yaml_data.get('featureFlags', {}).get('flags', [])[0].get('environments', [])[0].get('state')
+        
+#         # Determine if the flag is enabled or disabled
+#         if flag_status == 'on':
+#             flag_status_text = 'enabled'
+#         else:
+#             flag_status_text = 'disabled'
+#     except FileNotFoundError:
+#         # Handle the case where the file does not exist
+#         flag_status_text = 'file not found'
+    
+#     # Pass the flag status to the template
+#     return render(request, 'my_view.html', {'flag_status': flag_status_text})
 
 def my_view(request):
-    # Path to the pipeline.yaml file
-    file_path = 'django_flag/pipeline.yaml'
-    
+    # Load pipeline.yaml file to get feature flag status
     try:
-        # Read the contents of the file
-        with open(file_path, 'r') as file:
-            yaml_data = yaml.safe_load(file)
-        
-        # Extract the flag status from the parsed YAML data
-        flag_status = yaml_data.get('featureFlags', {}).get('flags', [])[0].get('environments', [])[0].get('state')
-        
-        # Determine if the flag is enabled or disabled
-        if flag_status == 'on':
-            flag_status_text = 'enabled'
-        else:
-            flag_status_text = 'disabled'
+        with open('django_flag/pipeline.yaml', 'r') as file:
+            pipeline_data = yaml.safe_load(file)
+            feature_flags = pipeline_data.get('featureFlags', {}).get('flags', [])
+            flag_status = None
+            for flag in feature_flags:
+                if flag['flag']['name'] == 'python_django':
+                    flag_status = flag['environments'][0].get('state', 'off') == 'on'
+                    break
     except FileNotFoundError:
-        # Handle the case where the file does not exist
-        flag_status_text = 'file not found'
-    
-    # Pass the flag status to the template
-    return render(request, 'my_view.html', {'flag_status': flag_status_text})
+        # Handle the case when the file doesn't exist or cannot be read
+        flag_status = None
+
+    # Render the template with the feature flag status
+    return render(request, 'my_view.html', {'flag_status': flag_status})
