@@ -58,7 +58,7 @@ def index(request):
 
 def my_view(request):
     # Define the YAML file path
-    yaml_file_path = '/Users/akumarjha/project/pythondjango_featureflag/djnago_flag/pipeline.yaml'
+    yaml_file_path = '/Users/akumarjha/project/pythondjango_featureflag/pipeline.yaml'
 
     # Load the YAML data from the file
     with open(yaml_file_path, 'r') as file:
