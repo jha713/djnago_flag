@@ -2,6 +2,8 @@ from django.shortcuts import render
 from .models import FeatureFlag
 import requests
 import yaml
+import json
+import os
 
 def index(request):
     # Retrieve all feature flags from the database
@@ -55,19 +57,39 @@ def index(request):
 #     return render(request, 'my_view.html', {'flag_status': flag_status_text})
 
 def my_view(request):
-    # Load pipeline.yaml file to get feature flag status
-    try:
-        with open('django_flag/pipeline.yaml', 'r') as file:
-            pipeline_data = yaml.safe_load(file)
-            feature_flags = pipeline_data.get('featureFlags', {}).get('flags', [])
-            flag_status = None
-            for flag in feature_flags:
-                if flag['flag']['name'] == 'python_django':
-                    flag_status = flag['environments'][0].get('state', 'off') == 'on'
+    # Define the YAML file path
+    yaml_file_path = '/Users/akumarjha/project/pythondjango_featureflag/djnago_flag/pipeline.yaml'
+
+    # Load the YAML data from the file
+    with open(yaml_file_path, 'r') as file:
+        yaml_data = yaml.safe_load(file)
+
+    # Convert YAML data to JSON
+    json_data = json.dumps(yaml_data)
+
+    # Load JSON data
+    data = json.loads(json_data)
+
+    # Initialize flag status as False by default
+    flag_status = False
+
+    # Check if the expected keys are present
+    if 'featureFlags' in data and 'flags' in data['featureFlags']:
+        # Iterate through the flags to find the state value that is 'on'
+        for flag_data in data['featureFlags']['flags']:
+            if flag_data['flag']['name'] == 'python_djnago':
+                if 'environments' in flag_data['flag']:
+                    for environment in flag_data['flag']['environments']:
+                        if environment.get('state') == 'on':
+                            flag_status = True
+                            break  # Break the loop once the flag state is found
+                else:
+                    print("No environments found for this flag")
                     break
-    except FileNotFoundError:
-        # Handle the case when the file doesn't exist or cannot be read
-        flag_status = None
+    else:
+        print("JSON data structure is not as expected.")
+
+    print("Flag Status (Final):", flag_status)  # Print the final flag status
 
     # Render the template with the feature flag status
     return render(request, 'my_view.html', {'flag_status': flag_status})

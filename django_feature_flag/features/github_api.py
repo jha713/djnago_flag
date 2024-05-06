@@ -1,29 +1,31 @@
-import requests
 import yaml
+import json
 
-def get_pipeline_yaml():
-    # GitHub repository information
-    owner = 'jha713'
-    repo = 'django_flag'
-    file_path = 'https://github.com/jha713/djnago_flag/blob/main/pipeline.yaml'
-    branch = 'main'  # or specify the branch name
+# Load the YAML data from the file
+with open('/Users/akumarjha/project/pythondjango_featureflag/djnago_flag/pipeline.yaml', 'r') as file:
+    yaml_data = yaml.safe_load(file)
 
-    # GitHub API endpoint for raw file contents
-    api_url = f'https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file_path}'
+# Convert YAML data to JSON
+json_data = json.dumps(yaml_data)
 
-    # Make HTTP GET request to fetch file contents
-    response = requests.get(api_url)
+# Load JSON data
+data = json.loads(json_data)
+print('Pipeline file data:', data)
 
-    # Check if request was successful
-    if response.status_code == 200:
-        # Parse YAML data from response content
-        yaml_data = yaml.safe_load(response.content)
-        return yaml_data
-    else:
-        # Handle error (e.g., file not found)
-        return None
-
-# Example usage
-pipeline_yaml = get_pipeline_yaml()
-if pipeline_yaml:
-    print(pipeline_yaml)
+# Check if the expected keys are present
+if 'featureFlags' in data and 'flags' in data['featureFlags']:
+    # Iterate through the flags to find the state value that is 'on'
+    for flag_data in data['featureFlags']['flags']:
+        print("Flag:", flag_data['flag']['name'])
+        if 'environments' in flag_data['flag']:
+            for environment in flag_data['flag']['environments']:
+                print("Environment:", environment['identifier'])
+                if environment.get('state') == 'on':
+                    state_value = environment['state']
+                    print("State value that is currently 'on':", state_value)
+                else:
+                    print("State value:", environment.get('state', 'N/A'))
+        else:
+            print("No environments found for this flag")
+else:
+    print("JSON data structure is not as expected.")

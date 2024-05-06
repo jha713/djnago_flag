@@ -6,17 +6,16 @@
 </head>
 <body>
     <h1>Feature Flags</h1>
-    <ul>
-        {% for flag in feature_flags %}
-            <li>{{ flag.name }} - {% if flag.is_enabled %}Enabled{% else %}Disabled{% endif %}</li>
-        {% endfor %}
-    </ul>
-
+    <!-- Add your existing code to display other feature flags if needed -->
     <h2>Feature Flag Status</h2>
-    {% if flag_status %}
-        <p>The feature flag is <strong>enabled</strong>.</p>
+    {% if flag_status is not None %}
+        {% if flag_status %}
+            <p>The feature flag is <strong>enabled</strong>.</p>
+        {% else %}
+            <p>The feature flag is <strong>disabled</strong>.</p>
+        {% endif %}
     {% else %}
-        <p>The feature flag is <strong>disabled</strong>.</p>
+        <p>Flag status not available.</p>
     {% endif %}
 </body>
 </html>
