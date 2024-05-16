@@ -34,3 +34,7 @@ async def my_view():
 
 def get_flag_status():
     return asyncio.run(my_view())
+
+if __name__ == '__main__':
+    flag_status = get_flag_status()
+    print(f"Flag status: {flag_status}")

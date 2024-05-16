@@ -1,23 +1,72 @@
+# views.py
 from django.shortcuts import render
-from .models import FeatureFlag
+from .models import FeatureFlag , Employee
 import requests
 import yaml
 import json
 import os
 import asyncio
 import aiofiles
-
-# views.py
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .ymlscripts import get_flag_status
+from .serializers import EmployeeSerializer
+from rest_framework import status
 
 @api_view(['GET'])
 def flag_status_api(request):
     flag_status = get_flag_status()
+    print("Flag Status:", flag_status)  # Print flag status in the terminal
     return Response({'flag_status': flag_status})
 
+@api_view(['GET', 'POST'])
+def employees(request):
+    flag_status = get_flag_status()
 
+    if request.method == 'GET':
+        employees = Employee.objects.all()
+        serializer = EmployeeSerializer(employees, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        if flag_status:
+            serializer = EmployeeSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "You are not allowed to create new employees because the feature flag is off."}, status=status.HTTP_403_FORBIDDEN)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def employee_detail(request, pk):
+    try:
+        employee = Employee.objects.get(pk=pk)
+    except Employee.DoesNotExist:
+        return Response({"message": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    flag_status = get_flag_status()
+
+    if request.method == 'GET':
+        serializer = EmployeeSerializer(employee)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        if flag_status:
+            serializer = EmployeeSerializer(employee, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "You are not allowed to update employees because the feature flag is off."}, status=status.HTTP_403_FORBIDDEN)
+
+    elif request.method == 'DELETE':
+        if flag_status:
+            employee.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message": "You are not allowed to delete employees because the feature flag is off."}, status=status.HTTP_403_FORBIDDEN)
 # def index(request):
 #     # Retrieve all feature flags from the database
 #     feature_flags = FeatureFlag.objects.all()
