@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_jha713_djnago_flag_1715958608398-push-trigger-input-set
+  identifier: Build_jha713_djnago_flag_1715958608398pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_jha713_djnago_flag_1715958608398
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
